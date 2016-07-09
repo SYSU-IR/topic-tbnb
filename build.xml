@@ -1,0 +1,28 @@
+<project name="Twitter" default="run" basedir=".">
+	<property name="src" location="."/>
+	<property name="build" location="classes"/>
+	<property name="jar" location="jar"/>
+
+	<target name="init">
+		<mkdir dir="${build}"/>
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="${src}" destdir="${build}">
+			<classpath>
+				<pathelement path="${jar}/twitter4j-core-4.0.4.jar"/>
+				<pathelement path="${jar}/postgresql-9.4.1208.jre6.jar"/>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="run" depends="compile">
+		<java classname="Collection" classpath="${build}">
+			<classpath>
+				<pathelement path="${jar}/twitter4j-core-4.0.4.jar"/>
+				<pathelement path="${jar}/postgresql-9.4.1208.jre6.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+</project>
