@@ -1,6 +1,7 @@
 import twitter4j.*;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.io.*;
 import java.sql.*; 
 import java.text.*;
@@ -77,23 +78,41 @@ public class Collection {
         return true;
 	}
 
+    private static ArrayList<String> read(String filePath) {
+        ArrayList<String> temp = new ArrayList<>();
+        try {
+            FileReader file = new FileReader(filePath);
+            BufferedReader br = new BufferedReader(file);
+            String s = br.readLine();
+            while(s != null){
+                temp.add(s);
+                s = br.readLine();
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return temp;
+    }
+
 	public static void main(String[] args) {
 		Collection c = new Collection();
-        c.getUser("CrookedHillary", true);
-        c.getUser("NoTrump", false);
-		FileReader file = new FileReader("queryTrump.txt");
-		try {
-			BufferedReader br = new BufferedReader(file);
-        	while(br.readLine() != null){
-            	String s = br.readLine();
-            	if (getUser(s))
-            		System.out.println(s + " succeeds");
-            	else
-            		System.out.println(s + " fails");
-        	}
-        	br.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        ArrayList<String> trump = read("queryTrump.txt");
+        ArrayList<String> hillary = read("queryHillary.txt");
+
+        if (trump != null) {
+            for (String s : trump) {
+                //System.out.println(s);
+                c.getUser(s, true);
+            }
+        }
+
+        if (hillary != null) {
+            for (String s : hillary) {
+                //System.out.println(s);
+                c.getUser(s, false);
+            }
+        }
 	}
 }
