@@ -15,7 +15,7 @@ public class Collection {
             QueryResult result = twitter.search(query);
             List<Status> tweets = result.getTweets();
             int num = (int) (Math.random() * tweets.size());
-            String nameOfFirstUser = result.getTweets().get(num).getUser().getScreenName();
+            String nameOfFirstUser = tweets.get(num).getUser().getScreenName();
             List<Status> statuses;
             statuses = twitter.getUserTimeline(nameOfFirstUser);
             for (Status status : statuses) {
