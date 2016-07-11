@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
@@ -7,16 +8,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import java.lang.*;
-
-import org.netlib.util.doubleW;
-import org.netlib.util.intW;
-
-import sun.awt.image.ToolkitImage;
-
-import cc.mallet.examples.TopicModel;
 import cc.mallet.pipe.*;
-import cc.mallet.pipe.iterator.CsvIterator;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicInferencer;
 import cc.mallet.types.Alphabet;
@@ -24,7 +16,6 @@ import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.IDSorter;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
-import cc.mallet.types.LabelSequence;
 
 
 public class TrainingProcess {
@@ -33,27 +24,37 @@ public class TrainingProcess {
 	private int numTopics;
 	private ArrayList<HashMap<String, tokenProbility> > topicProbilityTable;
 	
-	class tokenProbility {
-		private double forHillary;
-		private double forTrump;
-		
-		public tokenProbility(double h, double t) {
-			forHillary = h;
-			forTrump = t;
-		}
-		public double getForHillary() {
-			return forHillary;
-		}
-		public double getForTrump() {
-			return forHillary;
-		}
-		public void setForHillary(double d) {
-			forHillary = d;
-		}
-		public void setForTrump(double d) {
-			forTrump = d;
-		}
+	public InstanceList getInstanceList() {
+		return instances;
 	}
+	public ParallelTopicModel getModel() {
+		return model;
+	}
+	public HashMap<String, tokenProbility> getProbilityTable(int index) {
+		return topicProbilityTable.get(index);
+	}
+	
+//	public class tokenProbility {
+//		private double forHillary;
+//		private double forTrump;
+//		
+//		public tokenProbility(double h, double t) {
+//			forHillary = h;
+//			forTrump = t;
+//		}
+//		public double getForHillary() {
+//			return forHillary;
+//		}
+//		public double getForTrump() {
+//			return forHillary;
+//		}
+//		public void setForHillary(double d) {
+//			forHillary = d;
+//		}
+//		public void setForTrump(double d) {
+//			forTrump = d;
+//		}
+//	}
 	
 	public TrainingProcess() {
  		numTopics = 10;
@@ -123,7 +124,7 @@ public class TrainingProcess {
 
  		// Run the model for 50 iterations and stop (this is for testing only, 
  		//  for real applications, use 1000 to 2000 iterations)
- 		model.setNumIterations(50);
+ 		model.setNumIterations(1000);
  		model.estimate();
 	}
 	
@@ -169,26 +170,28 @@ public class TrainingProcess {
 						cnt++;
 					}
 				}
-				double pro = cnt / topicWords.get(token);
+				//
+				double pro = (cnt + 1) / (topicWords.get(token) + 1000);
+				double smallest = 1.0 / (topicWords.get(token) + 1000);
 				HashMap<String, tokenProbility> topic = topicProbilityTable.get(topicIndex);
 				if (flag == 1) {
-//					if (!(topic.containsKey(token) && topic.get(token).getForTrump() != 0)) System.out.println(token + " in trump" + ": " + pro);
+//					System.out.println(token + " in trump" + ": " + pro);
 					if (topic.containsKey(token)) {
 						double old = topic.get(token).getForTrump();
 						topic.get(token).setForTrump(pro + old);
 					}
 					else {
-						topic.put(token, new tokenProbility(0, pro));
+						topic.put(token, new tokenProbility(smallest, pro));
 					}
 				}
 				else {
-//					if (!(topic.containsKey(token) && topic.get(token).getForHillary() != 0)) System.out.println(token + " in hillary" + ": " + pro);
+//					System.out.println(token + " in hillary" + ": " + pro);
 					if (topic.containsKey(token)) {
 						double old = topic.get(token).getForHillary();
-						topic.get(token).setForHillary(pro);
+						topic.get(token).setForHillary(pro + old);
 					}
 					else {
-						topic.put(token, new tokenProbility(pro, 0));
+						topic.put(token, new tokenProbility(pro, smallest));
 					}
 				}
 			}
@@ -222,34 +225,6 @@ public class TrainingProcess {
     	}
 	}
 	
-	public void showFiveWordsOfTopics() {
-		// The data alphabet maps word IDs to strings
-     	Alphabet dataAlphabet = instances.getDataAlphabet();
-     	Formatter out = new Formatter(new StringBuilder(), Locale.US);
-     	
-     	// Estimate the topic distribution of the first instance,
-     	//  given the current Gibbs state.
-     	double[] topicDistribution = model.getTopicProbabilities(0);
-
-     	// Get an array of sorted sets of word ID/count pairs
-     	ArrayList<TreeSet<IDSorter>> topicSortedWords = model.getSortedWords();
-     		
-     	// Show top 5 words in topics with proportions for the first document
-     	for (int topic = 0; topic < numTopics; topic++) {
-     		Iterator<IDSorter> iterator = topicSortedWords.get(topic).iterator();
-     			
-     		out = new Formatter(new StringBuilder(), Locale.US);
-     		out.format("%d\t%.3f\t", topic, topicDistribution[topic]);
-     		int rank = 0;
-     		while (iterator.hasNext() && rank < 5) {
-     			IDSorter idCountPair = iterator.next();
-     			out.format("%s (%.0f) ", dataAlphabet.lookupObject(idCountPair.getID()), idCountPair.getWeight());
-     			rank++;
-    		}
-     		System.out.println(out);
-     	}
-	}
-	
 	public HashMap<String, Double> getTopicWords(int index) {
 		// The data alphabet maps word IDs to strings
      	Alphabet dataAlphabet = instances.getDataAlphabet();
@@ -260,7 +235,8 @@ public class TrainingProcess {
      	// Show top 5 words in topics with proportions for the first document
      	int rank = 0;
      	HashMap<String, Double> topicWords = new HashMap<String, Double>();
-     	while (iterator.hasNext() && rank < 15) {
+     	//
+     	while (iterator.hasNext() && rank < 1000) {
      		IDSorter idCountPair = iterator.next();
      		topicWords.put((String)dataAlphabet.lookupObject(idCountPair.getID()), idCountPair.getWeight());
      		rank++;
@@ -273,7 +249,7 @@ public class TrainingProcess {
 		instances = createInstanceList(sql);
 		topicGeneration();
 		// Show the words and topics in the first instance
-//		showFiveWordsOfTopics();
+		showTopics();
 		topicInferencing();
     }
 	public Connection connectDB() {
@@ -288,11 +264,11 @@ public class TrainingProcess {
         }
         return db;
 	}
-	public static void main(String[] args) throws IOException {
-//		String alldata = "C:\\Users\\Shower\\Desktop\\collection\\data\\alltweets.txt";
-		TrainingProcess trainingProcess = new TrainingProcess();
-		trainingProcess.dataPocessing();		
-	}
+//	public static void main(String[] args) throws IOException {
+////		String alldata = "C:\\Users\\Shower\\Desktop\\collection\\data\\alltweets.txt";
+//		TrainingProcess trainingProcess = new TrainingProcess();
+//		trainingProcess.dataPocessing();		
+//	}
 }
 
 

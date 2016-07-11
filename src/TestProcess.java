@@ -1,7 +1,6 @@
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,8 +11,6 @@ import java.lang.*;
 
 import org.netlib.util.doubleW;
 import org.netlib.util.intW;
-
-import TrainingProcess.tokenProbility;
 
 import sun.awt.image.ToolkitImage;
 
@@ -30,9 +27,17 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelSequence;
 
 public class TestProcess {
-	private double probForTrump;
-	private double probForHillary;
+	public double probForTrump;
+	public double probForHillary;
 	private InstanceList tempInstances;
+	private TrainingProcess trainingProcess;
+	
+	public TestProcess(TrainingProcess t) {
+		trainingProcess = t;
+		probForHillary = 0;
+		probForTrump = 0;
+	}
+	
 
 	public void checkInstanceFunction(Instance tweet) {
         /*
@@ -74,8 +79,6 @@ public class TestProcess {
        			probForTrump +=Math.log(coreTopic.get(token).getForTrump());
        		}
        	}
-
-
     }
 
     public void checkUserfunction() {
@@ -107,16 +110,16 @@ public class TestProcess {
         	checkInstanceFunction(tempInstances.get(j));
     }
 
-    public static void main(String[] args) throws IOException {
-//		String alldata = "C:\\Users\\Shower\\Desktop\\collection\\data\\alltweets.txt";
-		TrainingProcess trainingProcess = new TrainingProcess();
-		trainingProcess.dataPocessing();
-		probForHillary = 0;
-		probForTrump = 0;
-		checkUserfunction();
-		if (probForHillary > probForTrump) 
-			System.out.println(" this user is vote for Hillary" );
-		else 
-			System.out.println("this user is vote for Trump");
-	}
+//    public static void main(String[] args) throws IOException {
+////		String alldata = "C:\\Users\\Shower\\Desktop\\collection\\data\\alltweets.txt";
+//		TrainingProcess trainingProcess = new TrainingProcess();
+//		trainingProcess.dataPocessing();
+//		
+//		TestProcess testProcess = new TestProcess(trainingProcess);
+//		testProcess.checkUserfunction();
+//		if (testProcess.probForHillary > testProcess.probForTrump) 
+//			System.out.println(" this user is vote for Hillary" );
+//		else 
+//			System.out.println("this user is vote for Trump");
+//	}
 }
