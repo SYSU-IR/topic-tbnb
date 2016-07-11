@@ -1,5 +1,4 @@
 import twitter4j.*;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.io.*;
@@ -7,6 +6,28 @@ import java.sql.*;
 import java.text.*;
 
 public class Collection {
+
+    public static ArrayList<String> getUserForTest() {
+        Twitter twitter = new TwitterFactory().getInstance();
+        ArrayList<String> res = new ArrayList<>();
+        try {
+            Query query = new Query("#Election2016");
+            QueryResult result = twitter.search(query);
+            List<Status> tweets = result.getTweets();
+            int num = (int) (Math.random() * tweets.size());
+            String nameOfFirstUser = result.getTweets().get(num).getUser().getScreenName();
+            List<Status> statuses;
+            statuses = twitter.getUserTimeline(nameOfFirstUser);
+            for (Status status : statuses) {
+                res.add(status.getText());
+            }
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            System.out.println("Failed to search tweets: " + te.getMessage());
+            return null;
+        }
+        return res;
+    }
 
 	private static boolean getUser(String keyWord, boolean isTrump) {
 		Twitter twitter = new TwitterFactory().getInstance();
@@ -98,21 +119,25 @@ public class Collection {
 
 	public static void main(String[] args) {
 		Collection c = new Collection();
-        ArrayList<String> trump = read("queryTrump.txt");
-        ArrayList<String> hillary = read("queryHillary.txt");
+        //ArrayList<String> trump = read("queryTrump.txt");
+        //ArrayList<String> hillary = read("queryHillary.txt");
 
-        if (trump != null) {
+        /*if (trump != null) {
             for (String s : trump) {
                 //System.out.println(s);
                 c.getUser(s, true);
             }
-        }
+        }*/
 
-        if (hillary != null) {
+        /*if (hillary != null) {
             for (String s : hillary) {
                 //System.out.println(s);
                 c.getUser(s, false);
             }
+        }*/
+        ArrayList<String> t = getUserForTest();
+        for (String s : t) {
+            System.out.println(s);
         }
 	}
 }
