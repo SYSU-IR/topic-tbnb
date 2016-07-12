@@ -7,21 +7,19 @@ import java.text.*;
 
 public class Collection {
 
-    public static ArrayList<String> getUserForTest() {
+    private static ArrayList<String> getUserNameByQuery(String keyWord) {
         Twitter twitter = new TwitterFactory().getInstance();
         ArrayList<String> res = new ArrayList<>();
         try {
-            Query query = new Query("#Election2016");
-            QueryResult result = twitter.search(query);
-            List<Status> tweets = result.getTweets();
-            int num = (int) (Math.random() * tweets.size());
-            String nameOfFirstUser = tweets.get(num).getUser().getScreenName();
-            res.add(nameOfFirstUser);
-            List<Status> statuses;
-            statuses = twitter.getUserTimeline(nameOfFirstUser);
-            for (Status status : statuses) {
-                res.add(status.getText());
-            }
+            Query query = new Query(keyWord);
+            QueryResult result;
+            do {
+                result = twitter.search(query);
+                List<Status> tweets = result.getTweets();
+                for (Status status : tweets) {
+                    res.add(status.getUser().getScreenName());
+                }
+            } while ((query = result.nextQuery()) != null);
         } catch (TwitterException te) {
             te.printStackTrace();
             System.out.println("Failed to search tweets: " + te.getMessage());
@@ -30,24 +28,38 @@ public class Collection {
         return res;
     }
 
-	private static boolean getUser(String keyWord, boolean isTrump) {
-		Twitter twitter = new TwitterFactory().getInstance();
+    private static ArrayList<String> getTweet(String name) {
+        Twitter twitter = new TwitterFactory().getInstance();
+        ArrayList<String> res = new ArrayList<>();
         try {
-            Query query = new Query(keyWord);
-            QueryResult result;
-            do {
-                result = twitter.search(query);
-                List<Status> tweets = result.getTweets();
-                for (Status tweet : tweets) {
-                	if (!insertUser(tweet.getUser().getScreenName(), isTrump))
-                		return false;
-                }
-            } while ((query = result.nextQuery()) != null);
+            List<Status> statuses;
+            statuses = twitter.getUserTimeline(name);
+            for (Status status : statuses) {
+                res.add(status.getText());
+            }
         } catch (TwitterException te) {
             te.printStackTrace();
-            System.out.println("Failed to search tweets: " + te.getMessage());
-            return false;
+            System.out.println("Failed to get timeline: " + te.getMessage());
+            return null;
         }
+        return res;
+    }
+
+    public static ArrayList<String> getUserForTest() {
+        ArrayList<String> res = getUserNameByQuery("#Election2016");
+        return res;
+    }
+
+	private static boolean getUser(String keyWord, boolean isTrump) {
+        ArrayList<String> res = getUserNameByQuery(keyWord);
+        if (res == null)
+            return false;
+
+        for (String name : res) {
+            if (!insertUser(name, isTrump))
+                        return false;
+        }
+
         return true;
 	}
 
@@ -76,25 +88,19 @@ public class Collection {
 			return false;
         }
 
-        Twitter twitter = new TwitterFactory().getInstance();
+        ArrayList<String> tweets = getTweet(name);
         try {
-            List<Status> statuses;
-            statuses = twitter.getUserTimeline(name);
-            for (Status status : statuses) {
+            for (String tweet : tweets) {
                 PreparedStatement prep = db.prepareStatement("INSERT INTO twitter VALUES (?, ?);");
-        		prep.setString(1, name);
-				prep.setString(2, status.getText());
-				prep.executeUpdate();
-				prep.close();
+                prep.setString(1, name);
+                prep.setString(2, tweet);
+                prep.executeUpdate();
+                prep.close();
             }
             db.close();
-        } catch (TwitterException te) {
-            te.printStackTrace();
-            System.out.println("Failed to get timeline: " + te.getMessage());
-            return false;
         } catch (SQLException e) {
-        	System.out.println(e.getMessage());
-			return false;
+            System.out.println(e.getMessage());
+            return false;
         }
 
         return true;
