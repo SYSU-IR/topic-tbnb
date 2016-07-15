@@ -43,11 +43,9 @@ public class TestProcess {
         /*
         In this function, we use a instance to calculate the probabilities that if the user
         is belong to which types.
-
         1. use Gibbs sampling to analyze the topicDistribution of instance ,decide 
             which topic the instance is belong to, and get the corresponding probability
             table of the topic.
-
         2. for every word(token) in the instance, if it is not in the vocabulary of this
             topic, we ignore this word. If it is in that topic, calculate the logarithm
             of probabilities that the word is belong to each type, and add them to 
@@ -60,8 +58,8 @@ public class TestProcess {
 
         double[] probabilities = infer.getSampledDistribution(tweet, 10, 1, 5);
 
-   		double max = 0;
-   		int topicIndex = 0;
+   		  double max = 0;
+   		  int topicIndex = 0;
        	for (int i = 0; i < probabilities.length; ++i) {
        		if (probabilities[i] > max) {
        			max = probabilities[i];
@@ -81,33 +79,41 @@ public class TestProcess {
        	}
     }
 
-    public void checkUserfunction() {
+    public void checkUserfunction(String userName) {
         /*
         In this function, we read a document that containing all tweets of a user,
         and call the method checkInstanceFunction() to check which type this user is.
-
         1. call the method ??? to get a document of user
-
         2. call the method checkInstanceFunction
         */
+
         ArrayList<Pipe> pipeList = new ArrayList<Pipe>();
-        // Pipes: lowercase, tokenize, remove stopwords, map to features
+          // Pipes: lowercase, tokenize, remove stopwords, map to features
         pipeList.add( new CharSequenceLowercase() );
         pipeList.add( new CharSequence2TokenSequence(Pattern.compile("\\p{L}[\\p{L}\\p{P}]+\\p{L}")) );
         pipeList.add( new TokenSequenceRemoveStopwords(new File("C:\\Users\\Shower\\Documents\\workspace\\TrainingProcess\\stoplists\\en.txt"), "UTF-8", false, false, false) );
         pipeList.add( new TokenSequence2FeatureSequence() );
         
         tempInstances = new InstanceList (new SerialPipes(pipeList));
+    
+        Collection colle = new Collection();
+        String userName =userNameSet.get(i);
+        ArrayList<String> testSet = colle.getTweet(userName);
 
-        Collection coll = new Collection();
-        ArrayList<String> testSet = coll.getUserForTest();
-
-        for (int i = 0; i < testSet.size(); ++i) {
-        	tempInstances.addThruPipe(new Instance(testSet.get(i), 3, 2, 1));
+        for (int i = 0; i < testSet.size(); ++i)
+          tempInstances.addThruPipe(new Instance(testSet.get(i), 3, 2, 1));
+          
+        int size = tempInstances.size();
+        for (int j = 0; j < size; ++j) {
+          checkInstanceFunction(tempInstances.get(j));
+          /*tempInstances.remove(0);*/
         }
-
-        for (int j = 0; j < tempInstances.size(); ++j)
-        	checkInstanceFunction(tempInstances.get(j));
+          
+        if (probForHillary > probForTrump) 
+          System.out.println("this user votes for Hillary" );
+        else 
+          System.out.println("this user votes for Trump");
+        
     }
 
 //    public static void main(String[] args) throws IOException {

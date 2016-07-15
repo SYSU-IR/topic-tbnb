@@ -33,12 +33,18 @@ public class TBNB {
 		TrainingProcess trainingProcess = new TrainingProcess();
 		trainingProcess.dataPocessing();
 		
-		TestProcess testProcess = new TestProcess(trainingProcess);
-		testProcess.checkUserfunction();
-		if (testProcess.probForHillary > testProcess.probForTrump) 
+		Collection coll = new Collection();
+        ArrayList<String> userNameSet = coll.getUserForTest();
+        for (int i =0; i <10; i++)
+		{
+			TestProcess testProcess = new TestProcess(trainingProcess);
+			String userName =userNameSet.get(i);
+			testProcess.checkUserfunction(userName);
+		}
+		/*if (testProcess.probForHillary > testProcess.probForTrump) 
 			System.out.println("this user votes for Hillary" );
 		else 
-			System.out.println("this user votes for Trump");
+			System.out.println("this user votes for Trump");*/
 	}
 	
 	/**
