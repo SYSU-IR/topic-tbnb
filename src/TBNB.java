@@ -3,7 +3,8 @@ import java.util.ArrayList;
 
 
 public class TBNB {
-	
+	private ArrayList<String> userNameSet;
+
 	public void dataFetching() {
 		Collection c = new Collection();
         //ArrayList<String> trump = read("queryTrump.txt");
@@ -22,8 +23,7 @@ public class TBNB {
                 c.getUser(s, false);
             }
         }*/
-        ArrayList<String> t = c.getUserForTest();
-        for (String s : t) {
+        for (String s : userNameSet) {
             System.out.println(s);
         }
 	}
@@ -34,7 +34,7 @@ public class TBNB {
 		trainingProcess.dataPocessing();
 		
 		Collection coll = new Collection();
-        ArrayList<String> userNameSet = coll.getUserForTest();
+        userNameSet = coll.getUserForTest();
         for (int i =0; i <10; i++)
 		{
 			TestProcess testProcess = new TestProcess(trainingProcess);
