@@ -91,13 +91,13 @@ public class TestProcess {
           // Pipes: lowercase, tokenize, remove stopwords, map to features
         pipeList.add( new CharSequenceLowercase() );
         pipeList.add( new CharSequence2TokenSequence(Pattern.compile("\\p{L}[\\p{L}\\p{P}]+\\p{L}")) );
-        pipeList.add( new TokenSequenceRemoveStopwords(new File("C:\\Users\\Shower\\Documents\\workspace\\TrainingProcess\\stoplists\\en.txt"), "UTF-8", false, false, false) );
+        pipeList.add( new TokenSequenceRemoveStopwords(new File("src\\stoplists\\en.txt"), "UTF-8", false, false, false) );
         pipeList.add( new TokenSequence2FeatureSequence() );
         
         tempInstances = new InstanceList (new SerialPipes(pipeList));
     
         Collection colle = new Collection();
-        String userName =userNameSet.get(i);
+//        String userName =userNameSet.get(i);
         ArrayList<String> testSet = colle.getTweet(userName);
 
         for (int i = 0; i < testSet.size(); ++i)
@@ -108,7 +108,10 @@ public class TestProcess {
           checkInstanceFunction(tempInstances.get(j));
           /*tempInstances.remove(0);*/
         }
-          
+        
+        System.out.println(userName);
+        System.out.println("Hillary: " + probForHillary + "\t" + "Trump: " + probForTrump + "\n");
+        
         if (probForHillary > probForTrump) 
           System.out.println("this user votes for Hillary" );
         else 

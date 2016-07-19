@@ -7,29 +7,30 @@ public class TBNB {
 
 	public void dataFetching() {
 		Collection c = new Collection();
-        //ArrayList<String> trump = read("queryTrump.txt");
-        //ArrayList<String> hillary = read("queryHillary.txt");
+        ArrayList<String> trump = c.read("src\\querys\\queryTrump.txt");
+        ArrayList<String> hillary = c.read("src\\querys\\queryHillary.txt");
 
-        /*if (trump != null) {
+        if (trump != null) {
             for (String s : trump) {
                 //System.out.println(s);
                 c.getUser(s, true);
             }
-        }*/
+        }
 
-        /*if (hillary != null) {
+        if (hillary != null) {
             for (String s : hillary) {
                 //System.out.println(s);
                 c.getUser(s, false);
             }
-        }*/
-        for (String s : userNameSet) {
-            System.out.println(s);
         }
+//        for (String s : userNameSet) {
+//            System.out.println(s);
+//        }
+        System.out.println("Data fetching --- done!");
 	}
 	
 	public void overall() throws IOException {
-		//dataFetching();
+//		dataFetching();
 		TrainingProcess trainingProcess = new TrainingProcess();
 		trainingProcess.dataPocessing();
 		

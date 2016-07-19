@@ -34,28 +34,6 @@ public class TrainingProcess {
 		return topicProbilityTable.get(index);
 	}
 	
-//	public class tokenProbility {
-//		private double forHillary;
-//		private double forTrump;
-//		
-//		public tokenProbility(double h, double t) {
-//			forHillary = h;
-//			forTrump = t;
-//		}
-//		public double getForHillary() {
-//			return forHillary;
-//		}
-//		public double getForTrump() {
-//			return forHillary;
-//		}
-//		public void setForHillary(double d) {
-//			forHillary = d;
-//		}
-//		public void setForTrump(double d) {
-//			forTrump = d;
-//		}
-//	}
-	
 	public TrainingProcess() {
  		numTopics = 10;
  		topicProbilityTable = new ArrayList<HashMap<String, tokenProbility>>();
@@ -69,7 +47,7 @@ public class TrainingProcess {
         // Pipes: lowercase, tokenize, remove stopwords, map to features
         pipeList.add( new CharSequenceLowercase() );
         pipeList.add( new CharSequence2TokenSequence(Pattern.compile("\\p{L}[\\p{L}\\p{P}]+\\p{L}")) );
-        pipeList.add( new TokenSequenceRemoveStopwords(new File("C:\\Users\\Shower\\Documents\\workspace\\TrainingProcess\\stoplists\\en.txt"), "UTF-8", false, false, false) );
+        pipeList.add( new TokenSequenceRemoveStopwords(new File("src\\stoplists\\en.txt"), "UTF-8", false, false, false) );
         pipeList.add( new TokenSequence2FeatureSequence() );
         
         InstanceList tempInstances = new InstanceList (new SerialPipes(pipeList));
