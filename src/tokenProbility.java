@@ -11,7 +11,7 @@ public class tokenProbility {
 		return forHillary;
 	}
 	public double getForTrump() {
-		return forHillary;
+		return forTrump;
 	}
 	public void setForHillary(double d) {
 		forHillary = d;

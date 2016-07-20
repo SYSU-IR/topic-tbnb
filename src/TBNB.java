@@ -42,6 +42,8 @@ public class TBNB {
 			String userName =userNameSet.get(i);
 			testProcess.checkUserfunction(userName);
 		}
+		
+		
 		/*if (testProcess.probForHillary > testProcess.probForTrump) 
 			System.out.println("this user votes for Hillary" );
 		else 

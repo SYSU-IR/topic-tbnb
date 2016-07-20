@@ -67,6 +67,8 @@ public class TestProcess {
        		}
        	}
 
+//        System.out.println("topicIndex: " + topicIndex + " max: " + max + " probabilities[0]: " + probabilities[0]);
+
        	HashMap<String, tokenProbility> coreTopic = trainingProcess.getProbilityTable(topicIndex);
        	String token;
        	Alphabet dataAlphabet = tempInstances.getDataAlphabet();
@@ -104,18 +106,18 @@ public class TestProcess {
           tempInstances.addThruPipe(new Instance(testSet.get(i), 3, 2, 1));
           
         int size = tempInstances.size();
+//        System.out.println("size of the InstanceList: " + size);
         for (int j = 0; j < size; ++j) {
           checkInstanceFunction(tempInstances.get(j));
           /*tempInstances.remove(0);*/
         }
-        
         System.out.println(userName);
-        System.out.println("Hillary: " + probForHillary + "\t" + "Trump: " + probForTrump + "\n");
+        System.out.println("Hillary: " + probForHillary + "\t" + "Trump: " + probForTrump);
         
         if (probForHillary > probForTrump) 
-          System.out.println("this user votes for Hillary" );
+          System.out.println("this user votes for Hillary\n" );
         else 
-          System.out.println("this user votes for Trump");
+          System.out.println("this user votes for Trump\n");
         
     }
 

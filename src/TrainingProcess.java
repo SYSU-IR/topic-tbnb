@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+
 import cc.mallet.pipe.*;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.topics.TopicInferencer;
@@ -58,9 +59,6 @@ public class TrainingProcess {
         }
         
         return tempInstances;
-//        Reader fileReader = new InputStreamReader(new FileInputStream(filePath), "UTF-8");
-//        instances.addThruPipe(new CsvIterator (fileReader, Pattern.compile("^(\\S*)[\\s,]*(\\S*)[\\s,]*(.*)$"),
-//                                               3, 2, 1)); // data, label, name fields
 	}
 
 	public ArrayList<String> readData(String sql) {
@@ -76,6 +74,7 @@ public class TrainingProcess {
 			while (rs.next()) {
 				String tweet = rs.getString("tweet");
 //				System.out.println(tweet);
+//				System.out.println();
 				data.add(tweet);
 			}
 			rs.close();
@@ -102,13 +101,14 @@ public class TrainingProcess {
 
  		// Run the model for 50 iterations and stop (this is for testing only, 
  		//  for real applications, use 1000 to 2000 iterations)
- 		model.setNumIterations(1000);
+ 		//
+ 		model.setNumIterations(1500);
  		model.estimate();
 	}
 	
 	public void topicInferencing() throws UnsupportedEncodingException, FileNotFoundException {
-   		String sql1 = "SELECT t.tweet FROM twitter t, twiuser u WHERE t.user = u.user AND u.flag LIKE " + "\'1\';";
-		String sql2 = "SELECT t.tweet FROM twitter t, twiuser u WHERE t.user = u.user AND u.flag LIKE " + "\'-1\';";
+   		String sql1 = "SELECT t.tweet FROM twitter t, twiuser u WHERE t.user = u.user AND u.flag LIKE " + "\'1%\';";
+		String sql2 = "SELECT t.tweet FROM twitter t, twiuser u WHERE t.user = u.user AND u.flag LIKE " + "\'-1%\';";
 		
 		inferencing(sql1, 1);
 		inferencing(sql2, -1);
@@ -133,45 +133,74 @@ public class TrainingProcess {
 	}
 	
 	public void createProbilityTable(int topicIndex, Instance ins, int flag) throws UnsupportedEncodingException, FileNotFoundException {
+		//  获取主题特征词
 		HashMap<String, Double> topicWords = getTopicWords(topicIndex);
-		// The data alphabet maps word IDs to strings
+		//  记录用过的词
+		ArrayList<String> used = new ArrayList<String>();
 		Alphabet dataAlphabet = instances.getDataAlphabet();
+		//  instance的tokens
 		FeatureSequence tokens = (FeatureSequence) ins.getData();
 		String token;
-//		System.out.println("tokens.getLength(): " + tokens.getLength());
 		for (int i = 0; i < tokens.getLength(); ++i) {
 			token = (String)dataAlphabet.lookupObject(tokens.getIndexAtPosition(i));
 			if (topicWords.containsKey(token)) {
-				int cnt = 0;
+				if (used.contains(token)) {
+					continue;
+				}
+				else {
+					used.add(token);
+				}
+				
+				double cnt = 0;
 				for (int j = 0; j < tokens.getLength(); ++j) {
 					if (token.equals((String)dataAlphabet.lookupObject(tokens.getIndexAtPosition(j)))) {
 						cnt++;
 					}
 				}
 				//
-				double pro = (cnt + 1) / (topicWords.get(token) + 1000);
-				double smallest = 1.0 / (topicWords.get(token) + 1000);
+//				double pro = (cnt + 1.0) / (topicWords.get(token) + 1000.0);
+//				double smallest = 1.0 / (topicWords.get(token) + 1000.0);
+				double pro = cnt;
+				double smallest = 0.0;
+				
 				HashMap<String, tokenProbility> topic = topicProbilityTable.get(topicIndex);
+				//trump
 				if (flag == 1) {
-//					System.out.println(token + " in trump" + ": " + pro);
 					if (topic.containsKey(token)) {
 						double old = topic.get(token).getForTrump();
-						topic.get(token).setForTrump(pro + old);
+						topic.get(token).setForTrump((pro + old));
+//						System.out.println("\tTrump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 					else {
 						topic.put(token, new tokenProbility(smallest, pro));
+//						System.out.println("Trump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 				}
-				else {
-//					System.out.println(token + " in hillary" + ": " + pro);
+				//hillary
+				else if(flag == -1) {
 					if (topic.containsKey(token)) {
 						double old = topic.get(token).getForHillary();
 						topic.get(token).setForHillary(pro + old);
+//						System.out.println("\\\\Trump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 					else {
 						topic.put(token, new tokenProbility(pro, smallest));
+//						System.out.println("hhhhhTrump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 				}
+			}
+		}
+	}
+	
+	public void computProbability() {
+		for (HashMap<String, tokenProbility> m : topicProbilityTable) {
+			for (String s : m.keySet()) {
+				tokenProbility tem = m.get(s);
+				double h = tem.getForHillary();
+				double t = tem.getForTrump();
+				double total = h + t;
+				tem.setForHillary((h + 1) / (total + 1000));
+				tem.setForTrump((t + 1) / (total + 1000));
 			}
 		}
 	}
@@ -223,13 +252,24 @@ public class TrainingProcess {
 	}
 	
 	public void dataPocessing() throws IOException {
-		String sql = "SELECT t.tweet FROM twitter t, twiuser u WHERE t.user = u.user;";
+		String sql = "SELECT tweet FROM twitter;";
 		instances = createInstanceList(sql);
 		topicGeneration();
-		// Show the words and topics in the first instance
-		showTopics();
+//		showTopics();
 		topicInferencing();
+		computProbability();
+//		debug();
     }
+	
+	public void debug() {
+		for (HashMap<String, tokenProbility> t : topicProbilityTable) {
+			for (String i : t.keySet()) {
+				System.out.println(i + "\tTrump: " + t.get(i).getForTrump() + " Hillary: " +
+						t.get(i).getForHillary());
+			}
+		}
+	}
+
 	public Connection connectDB() {
 		Connection db = null;
         try {
@@ -243,9 +283,8 @@ public class TrainingProcess {
         return db;
 	}
 //	public static void main(String[] args) throws IOException {
-////		String alldata = "C:\\Users\\Shower\\Desktop\\collection\\data\\alltweets.txt";
 //		TrainingProcess trainingProcess = new TrainingProcess();
-//		trainingProcess.dataPocessing();		
+//		trainingProcess.dataPocessing();
 //	}
 }
 
