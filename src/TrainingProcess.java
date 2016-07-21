@@ -123,7 +123,7 @@ public class TrainingProcess {
    			double max = 0;
    			int topicIndex = 0;
        		for (int i = 0; i < probabilities.length; ++i) {
-       			if (probabilities[i] > 0) {
+       			if (probabilities[i] > max) {
        				max = probabilities[i];
        				topicIndex = i;
        			}
@@ -255,19 +255,42 @@ public class TrainingProcess {
 		String sql = "SELECT tweet FROM twitter;";
 		instances = createInstanceList(sql);
 		topicGeneration();
-//		showTopics();
+		showTopics();
 		topicInferencing();
 		computProbability();
-//		debug();
+		debug();
     }
 	
 	public void debug() {
+		int j = 0;
+		int hillary = 0;
+		int trump = 0;
+		
 		for (HashMap<String, tokenProbility> t : topicProbilityTable) {
+//			System.out.println(j);
 			for (String i : t.keySet()) {
-				System.out.println(i + "\tTrump: " + t.get(i).getForTrump() + " Hillary: " +
-						t.get(i).getForHillary());
+//				System.out.println(i + "\tTrump: " + t.get(i).getForTrump() + " Hillary: " +
+//						t.get(i).getForHillary());
+				if (t.get(i).getForTrump() > t.get(i).getForHillary()) {
+//					System.out.println(i + ": trump");
+					trump++;
+				}
+				else {
+//					System.out.println(i + ": hillary");
+					hillary++;
+				}
 			}
+			j++;
 		}
+		System.out.println("trump: " + trump + " hillary: " + hillary);
+		
+//		//
+//		System.out.println("features");
+//		int i = 0;
+//		for (HashMap<String, tokenProbility> t : topicProbilityTable) {
+//			System.out.println(i + ": " + t.keySet().size());
+//			i++;
+//		}
 	}
 
 	public Connection connectDB() {
@@ -282,10 +305,10 @@ public class TrainingProcess {
         }
         return db;
 	}
-//	public static void main(String[] args) throws IOException {
-//		TrainingProcess trainingProcess = new TrainingProcess();
-//		trainingProcess.dataPocessing();
-//	}
+	public static void main(String[] args) throws IOException {
+		TrainingProcess trainingProcess = new TrainingProcess();
+		trainingProcess.dataPocessing();
+	}
 }
 
 

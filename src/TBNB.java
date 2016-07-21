@@ -30,16 +30,16 @@ public class TBNB {
 	}
 	
 	public void overall() throws IOException {
-//		dataFetching();
+		dataFetching();
 		TrainingProcess trainingProcess = new TrainingProcess();
 		trainingProcess.dataPocessing();
 		
 		Collection coll = new Collection();
         userNameSet = coll.getUserForTest();
-        for (int i =0; i <10; i++)
+        for (int i = 0; i < 10 && i < userNameSet.size(); i++)
 		{
 			TestProcess testProcess = new TestProcess(trainingProcess);
-			String userName =userNameSet.get(i);
+			String userName = userNameSet.get(i);
 			testProcess.checkUserfunction(userName);
 		}
 		

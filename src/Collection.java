@@ -46,7 +46,8 @@ public class Collection {
     }
 
     public static ArrayList<String> getUserForTest() {
-        ArrayList<String> res = getUserNameByQuery("#Election2016");
+//        ArrayList<String> res = getUserNameByQuery("#Election2016");
+        ArrayList<String> res = getUserNameByQuery("VoteForHillary");
         return res;
     }
 

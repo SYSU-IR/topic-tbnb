@@ -32,6 +32,10 @@ public class TestProcess {
 	private InstanceList tempInstances;
 	private TrainingProcess trainingProcess;
 	
+	//
+	private int h = 0;
+	private int t = 0;
+	
 	public TestProcess(TrainingProcess t) {
 		trainingProcess = t;
 		probForHillary = 0;
@@ -68,7 +72,9 @@ public class TestProcess {
        	}
 
 //        System.out.println("topicIndex: " + topicIndex + " max: " + max + " probabilities[0]: " + probabilities[0]);
-
+       	
+       	//
+       	
        	HashMap<String, tokenProbility> coreTopic = trainingProcess.getProbilityTable(topicIndex);
        	String token;
        	Alphabet dataAlphabet = tempInstances.getDataAlphabet();
@@ -77,6 +83,13 @@ public class TestProcess {
        		if (coreTopic.containsKey(token)) {
        			probForHillary += Math.log(coreTopic.get(token).getForHillary());
        			probForTrump +=Math.log(coreTopic.get(token).getForTrump());
+       			
+       			if (coreTopic.get(token).getForHillary() > coreTopic.get(token).getForTrump()) {
+       				h++;
+       			}
+       			else {
+       				t++;
+       			}
        		}
        	}
     }
@@ -114,11 +127,12 @@ public class TestProcess {
         System.out.println(userName);
         System.out.println("Hillary: " + probForHillary + "\t" + "Trump: " + probForTrump);
         
+        System.out.println("trump: " + t + " hillary: " + h);
+        
         if (probForHillary > probForTrump) 
           System.out.println("this user votes for Hillary\n" );
         else 
           System.out.println("this user votes for Trump\n");
-        
     }
 
 //    public static void main(String[] args) throws IOException {
