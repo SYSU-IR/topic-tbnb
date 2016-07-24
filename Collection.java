@@ -266,6 +266,10 @@ public class Collection {
         }*/
         boolean flag = getUserForTest();
         System.out.println(flag);
+        ArrayList<String> names = readTestUser();
+        for (String name : names) {
+            System.out.println(name);
+        }
         ArrayList<String> ts = readTestTweet("kocisue9");
         for (String t : ts) {
             System.out.println(t);
