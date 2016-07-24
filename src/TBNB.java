@@ -30,32 +30,26 @@ public class TBNB {
 	}
 	
 	public void overall() throws IOException {
-		dataFetching();
+//		dataFetching();
 		TrainingProcess trainingProcess = new TrainingProcess();
 		trainingProcess.dataPocessing();
 		
 		Collection coll = new Collection();
-        userNameSet = coll.getUserForTest();
-        for (int i = 0; i < 10 && i < userNameSet.size(); i++)
+//        userNameSet = coll.getUserForTest();
+		coll.getUserForTest();
+		userNameSet = coll.readTestUser();
+		
+		System.out.println("\nExperiment result: ");
+        for (int i = 0; i < 20 && i < userNameSet.size(); i++)
 		{
+        	System.out.println("User: " + i);
 			TestProcess testProcess = new TestProcess(trainingProcess);
 			String userName = userNameSet.get(i);
 			testProcess.checkUserfunction(userName);
 		}
-		
-		
-		/*if (testProcess.probForHillary > testProcess.probForTrump) 
-			System.out.println("this user votes for Hillary" );
-		else 
-			System.out.println("this user votes for Trump");*/
 	}
 	
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
 	public static void main(String[] args) throws IOException {
-		// TODO Auto-generated method stub
 		new TBNB().overall();
 	}
 

@@ -28,7 +28,7 @@ public class Collection {
         return res;
     }
 
-    private static ArrayList<String> getTweet(String name) {
+    public static ArrayList<String> getTweet(String name) {
         Twitter twitter = new TwitterFactory().getInstance();
         ArrayList<String> res = new ArrayList<>();
         try {
@@ -49,7 +49,7 @@ public class Collection {
         Connection db = null;
         try {
             Class.forName("org.postgresql.Driver");
-            db = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/twitterdb");
+            db = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/twitterdb", "postgres", "123456");
         } catch (ClassNotFoundException e) {
             System.out.println("Driver missed!");
             return null;
@@ -154,7 +154,7 @@ public class Collection {
         return readData(sql, "tweet");
     }
 
-	private static boolean getUser(String keyWord, boolean isTrump) {
+	public static boolean getUser(String keyWord, boolean isTrump) {
         ArrayList<String> res = getUserNameByQuery(keyWord);
         if (res == null)
             return false;
@@ -202,7 +202,7 @@ public class Collection {
         return true;
 	}
 
-    private static ArrayList<String> read(String filePath) {
+    public static ArrayList<String> read(String filePath) {
         ArrayList<String> temp = new ArrayList<>();
         try {
             FileReader file = new FileReader(filePath);
@@ -220,7 +220,7 @@ public class Collection {
         return temp;
     }
 //
-	public static void main(String[] args) {
+//	public static void main(String[] args) {
 		/*Collection c = new Collection();
         ArrayList<String> trump = read("queryTrump.txt");
         ArrayList<String> hillary = read("queryHillary.txt");
@@ -264,15 +264,15 @@ public class Collection {
             }
             System.out.println("Hillary tot : " + myCount);
         }*/
-        boolean flag = getUserForTest();
-        System.out.println(flag);
-        ArrayList<String> names = readTestUser();
-        for (String name : names) {
-            System.out.println(name);
-        }
-        ArrayList<String> ts = readTestTweet("kocisue9");
-        for (String t : ts) {
-            System.out.println(t);
-        }
-	}
+//        boolean flag = getUserForTest();
+//        System.out.println(flag);
+//        ArrayList<String> names = readTestUser();
+//        for (String name : names) {
+//            System.out.println(name);
+//        }
+//        ArrayList<String> ts = readTestTweet("kocisue9");
+//        for (String t : ts) {
+//            System.out.println(t);
+//        }
+//	}
 }

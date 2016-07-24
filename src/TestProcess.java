@@ -87,7 +87,7 @@ public class TestProcess {
        			if (coreTopic.get(token).getForHillary() > coreTopic.get(token).getForTrump()) {
        				h++;
        			}
-       			else {
+       			else if (coreTopic.get(token).getForHillary() < coreTopic.get(token).getForTrump()) {
        				t++;
        			}
        		}
@@ -113,7 +113,7 @@ public class TestProcess {
     
         Collection colle = new Collection();
 //        String userName =userNameSet.get(i);
-        ArrayList<String> testSet = colle.getTweet(userName);
+        ArrayList<String> testSet = colle.readTestTweet(userName);
 
         for (int i = 0; i < testSet.size(); ++i)
           tempInstances.addThruPipe(new Instance(testSet.get(i), 3, 2, 1));
@@ -131,7 +131,7 @@ public class TestProcess {
         
         if (probForHillary > probForTrump) 
           System.out.println("this user votes for Hillary\n" );
-        else 
+        else if (probForHillary < probForTrump) 
           System.out.println("this user votes for Trump\n");
     }
 

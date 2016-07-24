@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
@@ -88,7 +87,7 @@ public class TrainingProcess {
 	
 
 	public void topicGeneration() throws IOException {
-		 // Create a model with 100 topics, alpha_t = 0.01, beta_w = 0.01
+		 // Create a model with 10 topics, alpha_t = 0.01, beta_w = 0.01
  		//  Note that the first parameter is passed as the sum over topics, while
  		//  the second is 
  		model = new ParallelTopicModel(numTopics, 1.0, 0.01);
@@ -128,16 +127,17 @@ public class TrainingProcess {
        				topicIndex = i;
        			}
        		}
-       		createProbilityTable(topicIndex, instanceList.get(j), flag);
+       		createProbilityTable(topicIndex, instanceList.get(j), flag, instanceList);
    		}
 	}
 	
-	public void createProbilityTable(int topicIndex, Instance ins, int flag) throws UnsupportedEncodingException, FileNotFoundException {
+	public void createProbilityTable(int topicIndex, Instance ins, int flag, InstanceList list) throws UnsupportedEncodingException, FileNotFoundException {
 		//  获取主题特征词
 		HashMap<String, Double> topicWords = getTopicWords(topicIndex);
 		//  记录用过的词
 		ArrayList<String> used = new ArrayList<String>();
-		Alphabet dataAlphabet = instances.getDataAlphabet();
+//		Alphabet dataAlphabet = instances.getDataAlphabet();
+		Alphabet dataAlphabet = list.getDataAlphabet();
 		//  instance的tokens
 		FeatureSequence tokens = (FeatureSequence) ins.getData();
 		String token;
@@ -151,15 +151,12 @@ public class TrainingProcess {
 					used.add(token);
 				}
 				
-				double cnt = 0;
+				double cnt = 0.0;
 				for (int j = 0; j < tokens.getLength(); ++j) {
 					if (token.equals((String)dataAlphabet.lookupObject(tokens.getIndexAtPosition(j)))) {
 						cnt++;
 					}
 				}
-				//
-//				double pro = (cnt + 1.0) / (topicWords.get(token) + 1000.0);
-//				double smallest = 1.0 / (topicWords.get(token) + 1000.0);
 				double pro = cnt;
 				double smallest = 0.0;
 				
@@ -169,11 +166,9 @@ public class TrainingProcess {
 					if (topic.containsKey(token)) {
 						double old = topic.get(token).getForTrump();
 						topic.get(token).setForTrump((pro + old));
-//						System.out.println("\tTrump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 					else {
 						topic.put(token, new tokenProbility(smallest, pro));
-//						System.out.println("Trump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 				}
 				//hillary
@@ -181,11 +176,9 @@ public class TrainingProcess {
 					if (topic.containsKey(token)) {
 						double old = topic.get(token).getForHillary();
 						topic.get(token).setForHillary(pro + old);
-//						System.out.println("\\\\Trump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 					else {
 						topic.put(token, new tokenProbility(pro, smallest));
-//						System.out.println("hhhhhTrump: " + topic.get(token).getForTrump() + "\tHillary: " + topic.get(token).getForHillary());
 					}
 				}
 			}
@@ -239,7 +232,7 @@ public class TrainingProcess {
      	// Get an array of sorted sets of word ID/count pairs
      	TreeSet<IDSorter> topicSortedWords = model.getSortedWords().get(index);
  		Iterator<IDSorter> iterator = topicSortedWords.iterator();
-     	// Show top 5 words in topics with proportions for the first document
+
      	int rank = 0;
      	HashMap<String, Double> topicWords = new HashMap<String, Double>();
      	//
@@ -255,7 +248,7 @@ public class TrainingProcess {
 		String sql = "SELECT tweet FROM twitter;";
 		instances = createInstanceList(sql);
 		topicGeneration();
-		showTopics();
+//		showTopics();
 		topicInferencing();
 		computProbability();
 		debug();
@@ -267,30 +260,27 @@ public class TrainingProcess {
 		int trump = 0;
 		
 		for (HashMap<String, tokenProbility> t : topicProbilityTable) {
-//			System.out.println(j);
+			int tt = 0;
+			int h = 0;
 			for (String i : t.keySet()) {
 //				System.out.println(i + "\tTrump: " + t.get(i).getForTrump() + " Hillary: " +
 //						t.get(i).getForHillary());
 				if (t.get(i).getForTrump() > t.get(i).getForHillary()) {
 //					System.out.println(i + ": trump");
 					trump++;
+					tt++;
 				}
-				else {
+				else if (t.get(i).getForTrump() < t.get(i).getForHillary()) {
 //					System.out.println(i + ": hillary");
 					hillary++;
+					h++;
 				}
 			}
+			System.out.println(j + " trump: " + tt + " hillary: " + h);
 			j++;
+			
 		}
 		System.out.println("trump: " + trump + " hillary: " + hillary);
-		
-//		//
-//		System.out.println("features");
-//		int i = 0;
-//		for (HashMap<String, tokenProbility> t : topicProbilityTable) {
-//			System.out.println(i + ": " + t.keySet().size());
-//			i++;
-//		}
 	}
 
 	public Connection connectDB() {
@@ -305,10 +295,10 @@ public class TrainingProcess {
         }
         return db;
 	}
-	public static void main(String[] args) throws IOException {
-		TrainingProcess trainingProcess = new TrainingProcess();
-		trainingProcess.dataPocessing();
-	}
+//	public static void main(String[] args) throws IOException {		
+//		TrainingProcess trainingProcess = new TrainingProcess();
+//		trainingProcess.dataPocessing();
+//	}
 }
 
 
