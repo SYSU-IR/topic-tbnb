@@ -28,7 +28,7 @@ public class Collection {
         return res;
     }
 
-    public static ArrayList<String> getTweet(String name) {
+    private static ArrayList<String> getTweet(String name) {
         Twitter twitter = new TwitterFactory().getInstance();
         ArrayList<String> res = new ArrayList<>();
         try {
@@ -45,13 +45,116 @@ public class Collection {
         return res;
     }
 
-    public static ArrayList<String> getUserForTest() {
-//        ArrayList<String> res = getUserNameByQuery("#Election2016");
-        ArrayList<String> res = getUserNameByQuery("VoteForHillary");
-        return res;
+    private static Connection getDatabase() {
+        Connection db = null;
+        try {
+            Class.forName("org.postgresql.Driver");
+            db = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/twitterdb");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Driver missed!");
+            return null;
+        } catch (SQLException e) {
+            System.out.println("Connection Failed!");
+            return null;
+        }
+        return db;
     }
 
-	public static boolean getUser(String keyWord, boolean isTrump) {
+    public static boolean getUserForTest() {
+        Connection db = getDatabase();
+        if (db == null)
+            return false;
+
+        try {
+            PreparedStatement prep = db.prepareStatement("create table testuser (name varchar(100) primary key);");
+            prep.executeUpdate();
+            prep.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return true;
+        }
+
+        try {
+            PreparedStatement prep = db.prepareStatement("create table testTwitter (name varchar(100) references testuser(name), tweet varchar(500));");
+            prep.executeUpdate();
+            prep.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+
+        ArrayList<String> res = getUserNameByQuery("#Election2016");
+        for (String str : res) {
+            try {
+                PreparedStatement prep = db.prepareStatement("INSERT INTO testuser VALUES (?);");
+                prep.setString(1, str);
+                prep.executeUpdate();
+                prep.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                continue;
+            }
+
+            ArrayList<String> tweets = getTweet(str);
+            for (String tweet : tweets) {
+                try {
+                    PreparedStatement prep = db.prepareStatement("INSERT INTO testTwitter VALUES (?, ?);");
+                    prep.setString(1, str);
+                    prep.setString(2, tweet);
+                    prep.executeUpdate();
+                    prep.close();
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                    continue;
+                }
+            }
+        }
+
+        try {
+            db.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    private static ArrayList<String> readData(String sql, String key) {
+        Connection db = getDatabase();
+        if (db == null)
+            return null;
+
+        ArrayList<String> data = new ArrayList<String>();
+        try {
+            Statement stmt;
+            stmt = db.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                String temp = rs.getString(key);
+                data.add(temp);
+            }
+            rs.close();
+            stmt.close();
+            db.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.println("Operation done successfully");
+        return data;
+    }
+
+    public static ArrayList<String> readTestUser() {
+        String sql = "select * from testuser;";
+        return readData(sql, "name");
+    }
+
+    public static ArrayList<String> readTestTweet(String name) {
+        String sql = "select * from testTwitter where name=\'" + name + "\';";
+        return readData(sql, "tweet");
+    }
+
+	private static boolean getUser(String keyWord, boolean isTrump) {
         ArrayList<String> res = getUserNameByQuery(keyWord);
         if (res == null)
             return false;
@@ -65,18 +168,9 @@ public class Collection {
 	}
 
 	private static boolean insertUser(String name, boolean isTrump) {
-        Connection db = null;
-        try {
-            Class.forName("org.postgresql.Driver");
-//            db = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/twitterdb");
-            db = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/twitterdb", "postgres", "123456");
-        } catch (ClassNotFoundException e) {
-            System.out.println("Driver missed!");
+        Connection db = getDatabase();
+        if (db == null)
             return false;
-        } catch (SQLException e) {
-            System.out.println("Connection Failed!");
-            return false;
-        }
 
 		try {
 			PreparedStatement prep = db.prepareStatement("INSERT INTO twiuser VALUES (?, ?);");
@@ -108,7 +202,7 @@ public class Collection {
         return true;
 	}
 
-    public static ArrayList<String> read(String filePath) {
+    private static ArrayList<String> read(String filePath) {
         ArrayList<String> temp = new ArrayList<>();
         try {
             FileReader file = new FileReader(filePath);
@@ -126,27 +220,55 @@ public class Collection {
         return temp;
     }
 //
-//	public static void main(String[] args) {
-//		Collection c = new Collection();
-//        //ArrayList<String> trump = read("queryTrump.txt");
-//        //ArrayList<String> hillary = read("queryHillary.txt");
-//
-//        /*if (trump != null) {
-//            for (String s : trump) {
-//                //System.out.println(s);
-//                c.getUser(s, true);
-//            }
-//        }*/
-//
-//        /*if (hillary != null) {
-//            for (String s : hillary) {
-//                //System.out.println(s);
-//                c.getUser(s, false);
-//            }
-//        }*/
-//        ArrayList<String> t = getUserForTest();
-//        for (String s : t) {
-//            System.out.println(s);
-//        }
-//	}
+	public static void main(String[] args) {
+		/*Collection c = new Collection();
+        ArrayList<String> trump = read("queryTrump.txt");
+        ArrayList<String> hillary = read("queryHillary.txt");
+
+        if (trump != null) {
+            int myCount = 0;
+            ArrayList<String> name = new ArrayList<>();
+            for (String s : trump) {
+                ArrayList<String> temp = c.getUserNameByQuery(s);
+                int tempCount = 0;
+                for (String str : temp) {
+                    if (name.contains(str))
+                        continue;
+                    name.add(str);
+                    tempCount += 20;
+                    //ArrayList<String> res = getTweet(str);
+                    //tempCount += res.size();
+                }
+                System.out.println(s + " : " + tempCount);
+                myCount += tempCount;
+            }
+            System.out.println("Trump tot : " + myCount);
+        }
+
+        if (hillary != null) {
+            int myCount = 0;
+            ArrayList<String> name = new ArrayList<>();
+            for (String s : hillary) {
+                ArrayList<String> temp = c.getUserNameByQuery(s);
+                int tempCount = 0;
+                for (String str : temp) {
+                    if (name.contains(str))
+                        continue;
+                    name.add(str);
+                    tempCount += 20;
+                    //ArrayList<String> res = getTweet(str);
+                    //tempCount += res.size();
+                }
+                System.out.println(s + " : " + tempCount);
+                myCount += tempCount;
+            }
+            System.out.println("Hillary tot : " + myCount);
+        }*/
+        boolean flag = getUserForTest();
+        System.out.println(flag);
+        ArrayList<String> ts = readTestTweet("kocisue9");
+        for (String t : ts) {
+            System.out.println(t);
+        }
+	}
 }
