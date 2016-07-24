@@ -7,7 +7,7 @@ import java.text.*;
 
 public class Collection {
 
-    private static ArrayList<String> getUserNameByQuery(String keyWord) {
+    public static ArrayList<String> getUserNameByQuery(String keyWord) {
         Twitter twitter = new TwitterFactory().getInstance();
         ArrayList<String> res = new ArrayList<>();
         try {
